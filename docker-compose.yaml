@@ -1,0 +1,10 @@
+version: '3.0.0'
+
+services:
+  rocket:
+    build: .
+    command: bash -c "cargo run"
+    environment:
+      - DATABASE_URL=
+    ports:
+      - 3000:3000
