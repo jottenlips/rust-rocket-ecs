@@ -8,7 +8,8 @@ COPY . .
 
 EXPOSE 3000
 
-RUN rustup default nightly
+RUN rustup default stable
 RUN cargo build
 
-CMD ["cargo", "run"]
+CMD ["cargo", "run"]q
+
