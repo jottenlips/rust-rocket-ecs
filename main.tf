@@ -11,7 +11,6 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 2.0"
   region  = "us-east-1"
 }
 # just use the AWS default VPC every account has
@@ -38,14 +37,13 @@ resource "aws_ecs_cluster" "rocket_cluster" {
   name = "rocket-cluster"
 }
 
-
 resource "aws_ecs_task_definition" "rocket_task" {
   family                   = "rocket-task" # Naming our first task
   container_definitions    = <<DEFINITION
   [
     {
       "name": "rocket-task",
-      "image": "${aws_ecr_repository.rocket-ecr-repo.repository_url}",
+      "image": "${aws_ecr_repository.rocket_ecr_repo.repository_url}",
       "essential": true,
       "portMappings": [
         {
@@ -103,7 +101,7 @@ resource "aws_security_group" "load_balancer_security_group" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-
+  }
   egress {
     from_port   = 0
     to_port     = 0
