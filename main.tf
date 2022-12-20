@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "rocket_task" {
           "hostPort": 3000
         }
       ],
-      "memory": 512,
+      "memory": 1024,
       "cpu": 256,
       "logConfiguration": {
         "logDriver": "awslogs",
@@ -66,7 +66,7 @@ resource "aws_ecs_task_definition" "rocket_task" {
   DEFINITION
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  memory                   = 512
+  memory                   = 1024
   cpu                      = 256
   execution_role_arn       = aws_iam_role.ecsTaskExecutionRole.arn
 }
@@ -120,18 +120,13 @@ resource "aws_security_group" "load_balancer_security_group" {
 
 resource "aws_lb_target_group" "target_group" {
   name        = "target-group"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_default_vpc.default_vpc.id
   health_check {
-    healthy_threshold = "2"
-    unhealthy_threshold = "6"
-    interval = "30"
     matcher = "200,301,302"
     path = "/"
-    protocol = "HTTP"
-    timeout = "5"
   }
 }
 
@@ -160,7 +155,7 @@ resource "aws_ecs_service" "hello_rocket" {
 
   network_configuration {
     subnets          = ["${aws_default_subnet.default_subnet_a.id}", "${aws_default_subnet.default_subnet_b.id}", "${aws_default_subnet.default_subnet_c.id}"]
-    assign_public_ip = true
+    assign_public_ip = true 
     security_groups  = ["${aws_security_group.service_security_group.id}"]
   }
 }
@@ -168,16 +163,16 @@ resource "aws_ecs_service" "hello_rocket" {
 
 resource "aws_security_group" "service_security_group" {
   ingress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
     security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = 0 
+    to_port     = 0 
+    protocol    = "-1" 
+    cidr_blocks = ["0.0.0.0/0"] 
   }
 }
