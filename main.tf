@@ -11,7 +11,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = "us-east-1"
+  region = "us-east-1"
 }
 # just use the AWS default VPC every account has
 resource "aws_default_vpc" "default_vpc" {
@@ -112,48 +112,48 @@ resource "aws_security_group" "load_balancer_security_group" {
 
 resource "aws_lb_target_group" "target_group" {
   name        = "target-group"
-  port        = 80
+  port        = 3000
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_default_vpc.default_vpc.id 
+  vpc_id      = aws_default_vpc.default_vpc.id
 }
 
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_alb.application_load_balancer.arn 
+  load_balancer_arn = aws_alb.application_load_balancer.arn
   port              = "80"
   protocol          = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn 
+    target_group_arn = aws_lb_target_group.target_group.arn
   }
 }
 
 resource "aws_ecs_service" "hello_rocket" {
-  name            = "hello-rocket"                          
-  cluster         = aws_ecs_cluster.rocket_cluster.id      
-  task_definition = aws_ecs_task_definition.rocket_task.arn 
+  name            = "hello-rocket"
+  cluster         = aws_ecs_cluster.rocket_cluster.id
+  task_definition = aws_ecs_task_definition.rocket_task.arn
   launch_type     = "FARGATE"
   desired_count   = 3
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn 
+    target_group_arn = aws_lb_target_group.target_group.arn
     container_name   = aws_ecs_task_definition.rocket_task.family
     container_port   = 3000
   }
 
   network_configuration {
     subnets          = ["${aws_default_subnet.default_subnet_a.id}", "${aws_default_subnet.default_subnet_b.id}", "${aws_default_subnet.default_subnet_c.id}"]
-    assign_public_ip = true                                               
-    security_groups  = ["${aws_security_group.service_security_group.id}"] 
+    assign_public_ip = true
+    security_groups  = ["${aws_security_group.service_security_group.id}"]
   }
 }
 
 
 resource "aws_security_group" "service_security_group" {
   ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
     security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
   }
 
