@@ -1,10 +1,12 @@
-version: '3.0.0'
+version: "3.0.0"
 
 services:
   rocket:
     build: .
-    command: bash -c "cargo run"
+    command: |
+      ./app/target/debug/hello_rocket
     environment:
       - DATABASE_URL=
+      - ROCKET_PORT=3000
     ports:
       - 3000:3000
