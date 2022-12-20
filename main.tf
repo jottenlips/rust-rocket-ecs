@@ -38,11 +38,11 @@ resource "aws_ecs_cluster" "rocket_cluster" {
 }
 
 resource "aws_ecs_task_definition" "rocket_task" {
-  family                   = "rocket-task" # Naming our first task
+  family                   = "rocket-task-def"
   container_definitions    = <<DEFINITION
   [
     {
-      "name": "rocket-task",
+      "name": "rocket-task-def",
       "image": "${aws_ecr_repository.rocket_ecr_repo.repository_url}",
       "essential": true,
       "portMappings": [
