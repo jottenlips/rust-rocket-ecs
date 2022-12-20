@@ -1,15 +1,13 @@
-FROM rust:1.64.0
-
-ENV ROCKET_ADDRESS=0.0.0.0
-ENV ROCKET_PORT=3000
+FROM rust:1.64.0 as builder
 
 WORKDIR /app
 COPY . .
+RUN cargo build --release
 
-EXPOSE 3000
-
-RUN rustup default stable
-RUN cargo build
-
-CMD ["cargo", "run"]q
-
+FROM debian:buster-slim
+ENV ROCKET_ADDRESS=0.0.0.0
+ENV ROCKET_PORT=8000
+# Replace if you are making a real service
+ENV ROCKET_SECRET_KEY="shhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+COPY --from=builder /app /app
+CMD ["./app/target/release/hello_rocket"]

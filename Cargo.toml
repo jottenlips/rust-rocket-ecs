@@ -1,5 +1,5 @@
 [package]
-name = "hello-rocket"
+name = "hello_rocket"
 version = "0.1.0"
 edition = "2021"
 
