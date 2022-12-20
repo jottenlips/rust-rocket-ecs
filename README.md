@@ -1,4 +1,4 @@
-# start
+# Local
 
 1. Install Docker, Start Docker app
 
@@ -6,8 +6,7 @@
 
 3. open http://0.0.0.0:3000/
 
-
-# Deploy 
+# Deploy
 
 1. Setup [Terraform State](https://github.com/jottenlips/terraform-state-s3-backend-example)
 
@@ -43,4 +42,12 @@ docker tag rocket-ecr-repo:latest accountid.dkr.ecr.us-east-1.amazonaws.com/rock
 
 ```
 docker push accountid.dkr.ecr.us-east-1.amazonaws.com/rocket-ecr-repo:latest
+```
+
+# Destroy
+
+Delete the latest image in ECR
+
+```
+terraform destroy
 ```

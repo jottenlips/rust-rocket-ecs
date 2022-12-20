@@ -52,7 +52,15 @@ resource "aws_ecs_task_definition" "rocket_task" {
         }
       ],
       "memory": 512,
-      "cpu": 256
+      "cpu": 256,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "rocket-ecs-task",
+          "awslogs-region": "eu-central-1",
+          "awslogs-stream-prefix": "streaming"
+        }
+      }
     }
   ]
   DEFINITION
@@ -112,15 +120,24 @@ resource "aws_security_group" "load_balancer_security_group" {
 
 resource "aws_lb_target_group" "target_group" {
   name        = "target-group"
-  port        = 3000
+  port        = 80
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_default_vpc.default_vpc.id
+  health_check {
+    healthy_threshold = "2"
+    unhealthy_threshold = "6"
+    interval = "30"
+    matcher = "200,301,302"
+    path = "/"
+    protocol = "HTTP"
+    timeout = "5"
+  }
 }
 
 resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_alb.application_load_balancer.arn
-  port              = "80"
+  port              = 80
   protocol          = "HTTP"
   default_action {
     type             = "forward"
