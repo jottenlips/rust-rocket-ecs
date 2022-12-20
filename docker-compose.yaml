@@ -4,9 +4,9 @@ services:
   rocket:
     build: .
     command: |
-      ./app/target/debug/hello_rocket
+      ./app/target/release/hello_rocket
     environment:
       - DATABASE_URL=
-      - ROCKET_PORT=3000
+      - ROCKET_SECRET_KEY="shhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
     ports:
       - 3000:3000
