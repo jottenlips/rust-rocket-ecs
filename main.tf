@@ -47,8 +47,9 @@ resource "aws_ecs_task_definition" "rocket_task" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 80,
-          "hostPort": 8080
+          "containerPort": 8000,
+          "hostPort": 0,
+          "protocol": "tcp"
         }
       ],
       "memory": 1024,
@@ -96,12 +97,26 @@ resource "aws_alb" "application_load_balancer" {
 }
 
 resource "aws_security_group" "load_balancer_security_group" {
+
+  name        = "load_balancer_security_group"
+  description = "Controls access to the ALB"
+  vpc_id      = aws_default_vpc.default_vpc.id
+
+
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -124,7 +139,7 @@ resource "aws_lb_target_group" "target_group" {
 
 resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_alb.application_load_balancer.arn
-  port              = 80
+  port              = 443
   protocol          = "HTTP"
   default_action {
     type             = "forward"
@@ -142,7 +157,7 @@ resource "aws_ecs_service" "hello_rocket" {
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn
     container_name   = aws_ecs_task_definition.rocket_task.family
-    container_port   = 8080
+    container_port   = 80
   }
 
   network_configuration {
@@ -154,11 +169,22 @@ resource "aws_ecs_service" "hello_rocket" {
 
 
 resource "aws_security_group" "service_security_group" {
+  name        = "ecs_security_group"
+  description = "Allows inbound access from the ALB only"
+  vpc_id      = aws_default_vpc.default_vpc.id
+
   ingress {
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
-    security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
+    security_groups = [aws_security_group.load_balancer_security_group.id]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {

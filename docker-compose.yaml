@@ -9,4 +9,4 @@ services:
       - DATABASE_URL=
       - ROCKET_SECRET_KEY="shhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
     ports:
-      - 8080:8080
+      - 8000:8000
