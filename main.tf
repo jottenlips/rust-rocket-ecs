@@ -52,15 +52,7 @@ resource "aws_ecs_task_definition" "rocket_task" {
         }
       ],
       "memory": 1024,
-      "cpu": 256,
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "rocket-ecs-task",
-          "awslogs-region": "us-east-1",
-          "awslogs-stream-prefix": "streaming"
-        }
-      }
+      "cpu": 256
     }
   ]
   DEFINITION
