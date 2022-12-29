@@ -32,8 +32,7 @@ resource "aws_ecs_task_definition" "rocket_task" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 8000,
-          "hostPort": 8000
+          "containerPort": 8000
         }
       ],
       "memory": 512,
@@ -137,7 +136,7 @@ resource "aws_ecs_service" "hello_rocket" {
   cluster         = aws_ecs_cluster.rocket_cluster.id
   task_definition = aws_ecs_task_definition.rocket_task.arn
   launch_type     = "FARGATE"
-  desired_count   = 3
+  desired_count   = 1
 
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn
