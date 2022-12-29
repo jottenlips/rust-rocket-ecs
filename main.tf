@@ -139,7 +139,7 @@ resource "aws_ecs_service" "hello_rocket" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.rocket_app.arn
     container_name   = aws_ecs_task_definition.rocket_task.family
     container_port   = 8000
   }
