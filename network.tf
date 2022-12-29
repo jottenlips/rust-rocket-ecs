@@ -131,7 +131,7 @@ resource "aws_security_group" "https" {
 
 resource "aws_security_group" "egress_all" {
   name        = "egress-all"
-  description = "Allow all outbound traffic"
+  description = "Allow outbound traffic"
   vpc_id      = aws_vpc.app_vpc.id
 
   egress {
@@ -144,7 +144,7 @@ resource "aws_security_group" "egress_all" {
 
 resource "aws_security_group" "ingress_api" {
   name        = "ingress-api"
-  description = "Allow ingress to API"
+  description = "Allow ingress to App"
   vpc_id      = aws_vpc.app_vpc.id
 
   ingress {
