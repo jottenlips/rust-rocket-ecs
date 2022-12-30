@@ -22,6 +22,10 @@ resource "aws_ecs_cluster" "rocket_cluster" {
   name = "rocket-cluster"
 }
 
+resource "aws_cloudwatch_log_group" "rocket_app" {
+  name = "/ecs/rocket-app"
+}
+
 resource "aws_ecs_task_definition" "rocket_task" {
   family                   = "rocket-task"
   container_definitions    = <<DEFINITION
@@ -36,7 +40,15 @@ resource "aws_ecs_task_definition" "rocket_task" {
         }
       ],
       "memory": 512,
-      "cpu": 256
+      "cpu": 256,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-region": "us-east-1",
+          "awslogs-group": "/ecs/rocket-app",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
     }
   ]
   DEFINITION
@@ -112,6 +124,7 @@ resource "aws_lb_target_group" "rocket_app" {
   health_check {
     enabled = true
     path    = "/health"
+    matcher = "200,202"
   }
 
   depends_on = [aws_alb.rocket_app]
