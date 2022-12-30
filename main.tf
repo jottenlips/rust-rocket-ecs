@@ -13,21 +13,6 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
-# just use the AWS default VPC every account has
-resource "aws_default_vpc" "default_vpc" {
-}
-
-resource "aws_default_subnet" "default_subnet_a" {
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_default_subnet" "default_subnet_b" {
-  availability_zone = "us-east-1b"
-}
-
-resource "aws_default_subnet" "default_subnet_c" {
-  availability_zone = "us-east-1c"
-}
 
 resource "aws_ecr_repository" "rocket_ecr_repo" {
   name = "rocket-ecr-repo"
@@ -35,6 +20,10 @@ resource "aws_ecr_repository" "rocket_ecr_repo" {
 
 resource "aws_ecs_cluster" "rocket_cluster" {
   name = "rocket-cluster"
+}
+
+resource "aws_cloudwatch_log_group" "rocket_app" {
+  name = "/ecs/rocket-app"
 }
 
 resource "aws_ecs_task_definition" "rocket_task" {
@@ -47,12 +36,19 @@ resource "aws_ecs_task_definition" "rocket_task" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 8000,
-          "hostPort": 8000
+          "containerPort": 8000
         }
       ],
       "memory": 512,
-      "cpu": 256
+      "cpu": 256,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-region": "us-east-1",
+          "awslogs-group": "/ecs/rocket-app",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
     }
   ]
   DEFINITION
@@ -84,16 +80,25 @@ resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_alb" "application_load_balancer" {
-  name               = "rocket-lb-tf"
+resource "aws_alb" "rocket_app" {
+  name               = "rocket-app-lb"
+  internal           = false
   load_balancer_type = "application"
+
   subnets = [
-    "${aws_default_subnet.default_subnet_a.id}",
-    "${aws_default_subnet.default_subnet_b.id}",
-    "${aws_default_subnet.default_subnet_c.id}"
+    aws_subnet.public_d.id,
+    aws_subnet.public_e.id,
   ]
-  security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
+
+  security_groups = [
+    aws_security_group.http.id,
+    aws_security_group.https.id,
+    aws_security_group.egress_all.id,
+  ]
+
+  depends_on = [aws_internet_gateway.igw]
 }
+
 
 resource "aws_security_group" "load_balancer_security_group" {
   ingress {
@@ -109,51 +114,61 @@ resource "aws_security_group" "load_balancer_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-
-resource "aws_lb_target_group" "target_group" {
-  name        = "target-group"
-  port        = 80
+resource "aws_lb_target_group" "rocket_app" {
+  name        = "rocket-app"
+  port        = 8000
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_default_vpc.default_vpc.id
+  vpc_id      = aws_vpc.app_vpc.id
+
   health_check {
-    healthy_threshold = "2"
-    unhealthy_threshold = "6"
-    interval = "30"
-    matcher = "200,301,302"
-    path = "/"
-    protocol = "HTTP"
-    timeout = "5"
+    enabled = true
+    path    = "/health"
+    matcher = "200,202"
   }
+
+  depends_on = [aws_alb.rocket_app]
 }
 
-resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_alb.application_load_balancer.arn
-  port              = 80
+resource "aws_alb_listener" "rocket_app_http" {
+  load_balancer_arn = aws_alb.rocket_app.arn
+  port              = "80"
   protocol          = "HTTP"
+
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.rocket_app.arn
   }
 }
 
+output "alb_url" {
+  value = "http://${aws_alb.rocket_app.dns_name}"
+}
 resource "aws_ecs_service" "hello_rocket" {
   name            = "hello-rocket"
   cluster         = aws_ecs_cluster.rocket_cluster.id
   task_definition = aws_ecs_task_definition.rocket_task.arn
   launch_type     = "FARGATE"
-  desired_count   = 3
+  desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.rocket_app.arn
     container_name   = aws_ecs_task_definition.rocket_task.family
     container_port   = 8000
   }
 
   network_configuration {
-    subnets          = ["${aws_default_subnet.default_subnet_a.id}", "${aws_default_subnet.default_subnet_b.id}", "${aws_default_subnet.default_subnet_c.id}"]
-    assign_public_ip = true
-    security_groups  = ["${aws_security_group.service_security_group.id}"]
+    assign_public_ip = false
+
+    security_groups = [
+      aws_security_group.egress_all.id,
+      aws_security_group.ingress_api.id,
+    ]
+
+    subnets = [
+    aws_subnet.private_d.id,
+    aws_subnet.private_e.id,
+    ]
   }
 }
 

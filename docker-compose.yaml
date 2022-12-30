@@ -4,7 +4,7 @@ services:
   rocket:
     build: .
     command: |
-      ./app/target/release/hello_rocket
+      /app/hello_rocket
     environment:
       - DATABASE_URL=
       - ROCKET_SECRET_KEY="shhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
