@@ -70,4 +70,4 @@ terraform destroy
 
 ### Benefits of ECS / Docker / Terraform
 
-With these technologies we can deploy apps written in any language and can scale horizontally and vertically. Say you had a Flask app also running in a docker container, you could use this terraform config to get it deployed to ECS quickly and scale the memory/cpu to what you need and the number of desired instances. You could also add an autoscaling group if you desire.
+With these technologies we can deploy apps written in any language and can scale horizontally and vertically. Say you had a Flask app also running in a docker container, you could use this terraform config to get it deployed to ECS quickly and scale the memory/cpu to what you need as well as the number of desired instances. You could also add an autoscaling group if you desire.
