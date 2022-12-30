@@ -1,4 +1,4 @@
-Honestly overkill for a hello world app. Think of it as hello world for ECS.
+Honestly overkill for a hello world app. Think of it as hello world for ECS 👋
 
 # Local
 
