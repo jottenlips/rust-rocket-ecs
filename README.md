@@ -4,7 +4,7 @@
 
 2. `docker-compose up`
 
-3. open http://0.0.0.0:8000/
+3. open http://localhost:8000/
 
 # Deploy
 
