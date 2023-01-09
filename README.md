@@ -27,6 +27,7 @@ terraform apply
 This should output a url like
 
 ```
+# This URL is no longer running since I didn't want to keep paying for it
 alb_url = "http://rocket-app-lb-105361214.us-east-1.elb.amazonaws.com"
 ```
 
